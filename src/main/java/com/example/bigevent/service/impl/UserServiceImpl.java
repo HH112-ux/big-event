@@ -1,11 +1,13 @@
 package com.example.bigevent.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.bigevent.dto.UserLoginDTO;
 import com.example.bigevent.dto.UserRegisterDTO;
 import com.example.bigevent.entity.User;
 import com.example.bigevent.exception.BusinessException;
 import com.example.bigevent.mapper.UserMapper;
 import com.example.bigevent.service.UserService;
+import com.example.bigevent.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -17,6 +19,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
     public void register(UserRegisterDTO registerDTO) {
@@ -31,5 +36,23 @@ public class UserServiceImpl implements UserService {
         user.setPassword(DigestUtils.md5DigestAsHex(registerDTO.getPassword().getBytes(StandardCharsets.UTF_8)));
 
         userMapper.insert(user);
+    }
+
+    @Override
+    public String login(UserLoginDTO loginDTO) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, loginDTO.getUsername());
+        User user = userMapper.selectOne(wrapper);
+
+        if (user == null) {
+            throw new BusinessException("用户名或密码错误");
+        }
+
+        String md5Password = DigestUtils.md5DigestAsHex(loginDTO.getPassword().getBytes(StandardCharsets.UTF_8));
+        if (!md5Password.equals(user.getPassword())) {
+            throw new BusinessException("用户名或密码错误");
+        }
+
+        return jwtUtil.generateToken(user.getId(), user.getUsername());
     }
 }
