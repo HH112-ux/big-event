@@ -3,11 +3,13 @@ package com.example.bigevent.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.bigevent.dto.UserLoginDTO;
 import com.example.bigevent.dto.UserRegisterDTO;
+import com.example.bigevent.dto.UserUpdateDTO;
 import com.example.bigevent.entity.User;
 import com.example.bigevent.exception.BusinessException;
 import com.example.bigevent.mapper.UserMapper;
 import com.example.bigevent.service.UserService;
 import com.example.bigevent.utils.JwtUtil;
+import com.example.bigevent.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -54,5 +56,41 @@ public class UserServiceImpl implements UserService {
         }
 
         return jwtUtil.generateToken(user.getId(), user.getUsername());
+    }
+
+    @Override
+    public User getUserInfo() {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+        user.setPassword(null);
+        return user;
+    }
+
+    @Override
+    public void update(UserUpdateDTO updateDTO) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+        if (!userId.equals(updateDTO.getId())) {
+            throw new BusinessException("只能修改自己的信息");
+        }
+
+        if (updateDTO.getUsername() != null) {
+            LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(User::getUsername, updateDTO.getUsername())
+                    .ne(User::getId, userId);
+            if (userMapper.selectCount(wrapper) > 0) {
+                throw new BusinessException("用户名已被占用");
+            }
+        }
+
+        User user = new User();
+        user.setId(updateDTO.getId());
+        user.setUsername(updateDTO.getUsername());
+        user.setNickname(updateDTO.getNickname());
+        user.setEmail(updateDTO.getEmail());
+
+        userMapper.updateById(user);
     }
 }

@@ -2,14 +2,22 @@ package com.example.bigevent.controller;
 
 import com.example.bigevent.dto.UserLoginDTO;
 import com.example.bigevent.dto.UserRegisterDTO;
+import com.example.bigevent.dto.UserUpdateDTO;
+import com.example.bigevent.entity.User;
 import com.example.bigevent.service.UserService;
 import com.example.bigevent.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +30,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "用户注册")
+    @Operation(summary = "用户注册", description = "用户名5~16位，密码5~16位，用户名不可重复")
     @SecurityRequirements
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "注册成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "用户名已被占用", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
     @PostMapping("/register")
     public Result<Void> register(@RequestBody @Valid UserRegisterDTO registerDTO) {
         userService.register(registerDTO);
@@ -32,9 +44,37 @@ public class UserController {
 
     @Operation(summary = "用户登录", description = "校验用户名密码后签发JWT令牌，令牌有效期12小时")
     @SecurityRequirements
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "登录成功，返回JWT令牌", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "用户名或密码错误", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
     @PostMapping("/login")
     public Result<String> login(@RequestBody @Valid UserLoginDTO loginDTO) {
         String token = userService.login(loginDTO);
         return Result.success(token);
+    }
+
+    @Operation(summary = "获取用户详细信息", description = "根据JWT令牌解析当前登录用户ID，查询并返回用户信息（不含密码）")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @GetMapping("/userInfo")
+    public Result<User> userInfo() {
+        User user = userService.getUserInfo();
+        return Result.success(user);
+    }
+
+    @Operation(summary = "更新用户基本信息", description = "更新当前登录用户的基本信息，id必须与当前登录用户一致；nickname和email必填，username选填")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "更新成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "用户名已被占用", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能修改自己的信息", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @PutMapping("/update")
+    public Result<Void> update(@RequestBody @Valid UserUpdateDTO updateDTO) {
+        userService.update(updateDTO);
+        return Result.success();
     }
 }
