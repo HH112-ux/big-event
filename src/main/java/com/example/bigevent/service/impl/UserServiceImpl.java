@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.bigevent.dto.UserLoginDTO;
 import com.example.bigevent.dto.UserRegisterDTO;
 import com.example.bigevent.dto.UserUpdateDTO;
+import com.example.bigevent.dto.UpdatePwdDTO;
 import com.example.bigevent.entity.User;
 import com.example.bigevent.exception.BusinessException;
 import com.example.bigevent.mapper.UserMapper;
@@ -101,6 +102,30 @@ public class UserServiceImpl implements UserService {
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(User::getId, userId)
                 .set(User::getUserPic, avatarUrl);
+        userMapper.update(null, wrapper);
+    }
+
+    @Override
+    public void updatePwd(UpdatePwdDTO updatePwdDTO) {
+        if (!updatePwdDTO.getNewPwd().equals(updatePwdDTO.getRePwd())) {
+            throw new BusinessException("两次新密码不一致");
+        }
+
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        String oldMd5 = DigestUtils.md5DigestAsHex(updatePwdDTO.getOldPwd().getBytes(StandardCharsets.UTF_8));
+        if (!oldMd5.equals(user.getPassword())) {
+            throw new BusinessException("原密码错误");
+        }
+
+        String newMd5 = DigestUtils.md5DigestAsHex(updatePwdDTO.getNewPwd().getBytes(StandardCharsets.UTF_8));
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(User::getId, userId)
+                .set(User::getPassword, newMd5);
         userMapper.update(null, wrapper);
     }
 }

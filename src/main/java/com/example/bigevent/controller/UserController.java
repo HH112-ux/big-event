@@ -3,6 +3,7 @@ package com.example.bigevent.controller;
 import com.example.bigevent.dto.UserLoginDTO;
 import com.example.bigevent.dto.UserRegisterDTO;
 import com.example.bigevent.dto.UserUpdateDTO;
+import com.example.bigevent.dto.UpdatePwdDTO;
 import com.example.bigevent.entity.User;
 import com.example.bigevent.service.UserService;
 import com.example.bigevent.utils.Result;
@@ -95,6 +96,19 @@ public class UserController {
             @Parameter(description = "头像URL地址", required = true, example = "https://example.com/avatar.png")
             @RequestParam @NotBlank(message = "头像URL不能为空") String avatarUrl) {
         userService.updateAvatar(avatarUrl);
+        return Result.success();
+    }
+
+    @Operation(summary = "更新用户密码", description = "校验原密码正确且两次新密码一致后，更新当前登录用户的密码")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "更新成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "原密码错误", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "两次新密码不一致", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @PatchMapping("/updatePwd")
+    public Result<Void> updatePwd(@RequestBody @Valid UpdatePwdDTO updatePwdDTO) {
+        userService.updatePwd(updatePwdDTO);
         return Result.success();
     }
 }
