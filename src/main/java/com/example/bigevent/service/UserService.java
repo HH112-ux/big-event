@@ -14,4 +14,6 @@ public interface UserService {
     User getUserInfo();
 
     void update(UserUpdateDTO updateDTO);
+
+    void updateAvatar(String avatarUrl);
 }

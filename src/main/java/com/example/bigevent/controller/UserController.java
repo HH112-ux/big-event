@@ -7,6 +7,7 @@ import com.example.bigevent.entity.User;
 import com.example.bigevent.service.UserService;
 import com.example.bigevent.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,15 +15,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "用户模块")
+@Validated
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -75,6 +81,20 @@ public class UserController {
     @PutMapping("/update")
     public Result<Void> update(@RequestBody @Valid UserUpdateDTO updateDTO) {
         userService.update(updateDTO);
+        return Result.success();
+    }
+
+    @Operation(summary = "更新用户头像", description = "更新当前登录用户的头像URL，avatarUrl参数通过queryString传递，不能为空")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "更新成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "头像URL不能为空", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @PatchMapping("/updateAvatar")
+    public Result<Void> updateAvatar(
+            @Parameter(description = "头像URL地址", required = true, example = "https://example.com/avatar.png")
+            @RequestParam @NotBlank(message = "头像URL不能为空") String avatarUrl) {
+        userService.updateAvatar(avatarUrl);
         return Result.success();
     }
 }

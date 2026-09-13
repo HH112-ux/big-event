@@ -1,6 +1,7 @@
 package com.example.bigevent.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.bigevent.dto.UserLoginDTO;
 import com.example.bigevent.dto.UserRegisterDTO;
 import com.example.bigevent.dto.UserUpdateDTO;
@@ -92,5 +93,14 @@ public class UserServiceImpl implements UserService {
         user.setEmail(updateDTO.getEmail());
 
         userMapper.updateById(user);
+    }
+
+    @Override
+    public void updateAvatar(String avatarUrl) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(User::getId, userId)
+                .set(User::getUserPic, avatarUrl);
+        userMapper.update(null, wrapper);
     }
 }
