@@ -49,5 +49,5 @@ aliyun:
 # 日志配置
 logging:
   level:
-    com.example.bigevent: debug
+    com.jh.bigevent: debug
     org.springframework: info
