@@ -2,10 +2,10 @@ package com.example.bigevent.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.example.bigevent.dto.UserLoginDTO;
-import com.example.bigevent.dto.UserRegisterDTO;
-import com.example.bigevent.dto.UserUpdateDTO;
-import com.example.bigevent.dto.UpdatePwdDTO;
+import com.example.bigevent.dto.user.UserLoginDTO;
+import com.example.bigevent.dto.user.UserRegisterDTO;
+import com.example.bigevent.dto.user.UserUpdateDTO;
+import com.example.bigevent.dto.user.UpdatePwdDTO;
 import com.example.bigevent.entity.User;
 import com.example.bigevent.exception.BusinessException;
 import com.example.bigevent.mapper.UserMapper;

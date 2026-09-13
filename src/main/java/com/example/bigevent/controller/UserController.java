@@ -1,9 +1,9 @@
 package com.example.bigevent.controller;
 
-import com.example.bigevent.dto.UserLoginDTO;
-import com.example.bigevent.dto.UserRegisterDTO;
-import com.example.bigevent.dto.UserUpdateDTO;
-import com.example.bigevent.dto.UpdatePwdDTO;
+import com.example.bigevent.dto.user.UserLoginDTO;
+import com.example.bigevent.dto.user.UserRegisterDTO;
+import com.example.bigevent.dto.user.UserUpdateDTO;
+import com.example.bigevent.dto.user.UpdatePwdDTO;
 import com.example.bigevent.entity.User;
 import com.example.bigevent.service.UserService;
 import com.example.bigevent.utils.Result;
