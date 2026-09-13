@@ -10,6 +10,8 @@ import com.jh.bigevent.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
@@ -40,5 +42,16 @@ public class CategoryServiceImpl implements CategoryService {
         category.setCreateUser(userId);
 
         categoryMapper.insert(category);
+    }
+
+    @Override
+    public List<Category> list() {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+
+        LambdaQueryWrapper<Category> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Category::getCreateUser, userId)
+                .orderByDesc(Category::getCreateTime);
+
+        return categoryMapper.selectList(wrapper);
     }
 }

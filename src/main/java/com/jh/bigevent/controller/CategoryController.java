@@ -1,6 +1,7 @@
 package com.jh.bigevent.controller;
 
 import com.jh.bigevent.dto.category.CategoryAddDTO;
+import com.jh.bigevent.entity.Category;
 import com.jh.bigevent.service.CategoryService;
 import com.jh.bigevent.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +13,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Tag(name = "文章分类模块")
 @Validated
@@ -37,5 +41,16 @@ public class CategoryController {
     public Result<Void> add(@RequestBody @Valid CategoryAddDTO categoryAddDTO) {
         categoryService.add(categoryAddDTO);
         return Result.success();
+    }
+
+    @Operation(summary = "文章分类列表", description = "获取当前登录用户创建的所有文章分类，按创建时间降序排列")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @GetMapping
+    public Result<List<Category>> list() {
+        List<Category> categories = categoryService.list();
+        return Result.success(categories);
     }
 }
