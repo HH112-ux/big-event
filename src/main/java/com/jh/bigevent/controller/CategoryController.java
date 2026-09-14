@@ -5,6 +5,7 @@ import com.jh.bigevent.entity.Category;
 import com.jh.bigevent.service.CategoryService;
 import com.jh.bigevent.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -52,5 +54,20 @@ public class CategoryController {
     public Result<List<Category>> list() {
         List<Category> categories = categoryService.list();
         return Result.success(categories);
+    }
+
+    @Operation(summary = "获取文章分类详情", description = "根据ID获取文章分类详情，只能查询当前用户自己创建的分类")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "分类不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能查询自己创建的分类", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @GetMapping("/detail")
+    public Result<Category> detail(
+            @Parameter(description = "分类主键ID", required = true, example = "1")
+            @RequestParam Long id) {
+        Category category = categoryService.detail(id);
+        return Result.success(category);
     }
 }

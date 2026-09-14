@@ -54,4 +54,18 @@ public class CategoryServiceImpl implements CategoryService {
 
         return categoryMapper.selectList(wrapper);
     }
+
+    @Override
+    public Category detail(Long id) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+
+        Category category = categoryMapper.selectById(id);
+        if (category == null) {
+            throw new BusinessException("分类不存在");
+        }
+        if (!category.getCreateUser().equals(userId)) {
+            throw new BusinessException("只能查询自己创建的分类");
+        }
+        return category;
+    }
 }

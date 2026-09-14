@@ -10,4 +10,6 @@ public interface CategoryService {
     void add(CategoryAddDTO categoryAddDTO);
 
     List<Category> list();
+
+    Category detail(Long id);
 }
