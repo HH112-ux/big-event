@@ -1,6 +1,7 @@
 package com.jh.bigevent.controller;
 
 import com.jh.bigevent.dto.category.CategoryAddDTO;
+import com.jh.bigevent.dto.category.CategoryUpdateDTO;
 import com.jh.bigevent.entity.Category;
 import com.jh.bigevent.service.CategoryService;
 import com.jh.bigevent.utils.Result;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,5 +71,20 @@ public class CategoryController {
             @RequestParam Long id) {
         Category category = categoryService.detail(id);
         return Result.success(category);
+    }
+
+    @Operation(summary = "更新文章分类", description = "更新分类名称和分类别名，只能修改自己创建的分类，名称和别名在当前用户下不可重复")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "更新成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "分类不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能修改自己创建的分类", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "分类名称已被占用", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "分类别名已被占用", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @PutMapping
+    public Result<Void> update(@RequestBody @Valid CategoryUpdateDTO categoryUpdateDTO) {
+        categoryService.update(categoryUpdateDTO);
+        return Result.success();
     }
 }
