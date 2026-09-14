@@ -105,4 +105,19 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryMapper.updateById(updateCategory);
     }
+
+    @Override
+    public void delete(Long id) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+
+        Category category = categoryMapper.selectById(id);
+        if (category == null) {
+            throw new BusinessException("分类不存在");
+        }
+        if (!category.getCreateUser().equals(userId)) {
+            throw new BusinessException("只能删除自己创建的分类");
+        }
+
+        categoryMapper.deleteById(id);
+    }
 }

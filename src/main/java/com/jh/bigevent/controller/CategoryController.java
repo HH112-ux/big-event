@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -85,6 +86,21 @@ public class CategoryController {
     @PutMapping
     public Result<Void> update(@RequestBody @Valid CategoryUpdateDTO categoryUpdateDTO) {
         categoryService.update(categoryUpdateDTO);
+        return Result.success();
+    }
+
+    @Operation(summary = "删除文章分类", description = "根据ID删除文章分类，只能删除自己创建的分类")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "删除成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "分类不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能删除自己创建的分类", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @DeleteMapping
+    public Result<Void> delete(
+            @Parameter(description = "分类主键ID", required = true, example = "1")
+            @RequestParam Long id) {
+        categoryService.delete(id);
         return Result.success();
     }
 }
