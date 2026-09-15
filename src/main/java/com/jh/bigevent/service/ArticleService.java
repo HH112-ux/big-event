@@ -10,4 +10,6 @@ public interface ArticleService {
     void add(ArticleAddDTO articleAddDTO);
 
     PageBean<Article> list(ArticleQueryDTO articleQueryDTO);
+
+    Article detail(Long id);
 }

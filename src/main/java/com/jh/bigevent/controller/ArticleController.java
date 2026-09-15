@@ -8,6 +8,7 @@ import com.jh.bigevent.utils.PageBean;
 import com.jh.bigevent.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "文章管理模块")
@@ -52,5 +54,20 @@ public class ArticleController {
     public Result<PageBean<Article>> list(@Valid ArticleQueryDTO articleQueryDTO) {
         PageBean<Article> page = articleService.list(articleQueryDTO);
         return Result.success(page);
+    }
+
+    @Operation(summary = "获取文章详情", description = "根据ID获取文章详细信息，只能查询当前用户自己创建的文章")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "查询成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "文章不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能查询自己创建的文章", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @GetMapping("/detail")
+    public Result<Article> detail(
+            @Parameter(description = "文章主键ID", required = true, example = "1")
+            @RequestParam Long id) {
+        Article article = articleService.detail(id);
+        return Result.success(article);
     }
 }

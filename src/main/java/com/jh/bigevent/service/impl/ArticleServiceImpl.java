@@ -10,6 +10,7 @@ import com.jh.bigevent.mapper.ArticleMapper;
 import com.jh.bigevent.service.ArticleService;
 import com.jh.bigevent.service.CategoryService;
 import com.jh.bigevent.utils.PageBean;
+import com.jh.bigevent.exception.BusinessException;
 import com.jh.bigevent.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,5 +65,19 @@ public class ArticleServiceImpl implements ArticleService {
         PageInfo<Article> pageInfo = new PageInfo<>(articles);
 
         return new PageBean<>(pageInfo.getTotal(), pageInfo.getList());
+    }
+
+    @Override
+    public Article detail(Long id) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+
+        Article article = articleMapper.selectById(id);
+        if (article == null) {
+            throw new BusinessException("文章不存在");
+        }
+        if (!article.getCreateUser().equals(userId)) {
+            throw new BusinessException("只能查询自己创建的文章");
+        }
+        return article;
     }
 }
