@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.jh.bigevent.dto.article.ArticleAddDTO;
 import com.jh.bigevent.dto.article.ArticleQueryDTO;
+import com.jh.bigevent.dto.article.ArticleUpdateDTO;
 import com.jh.bigevent.entity.Article;
 import com.jh.bigevent.mapper.ArticleMapper;
 import com.jh.bigevent.service.ArticleService;
@@ -79,5 +80,50 @@ public class ArticleServiceImpl implements ArticleService {
             throw new BusinessException("只能查询自己创建的文章");
         }
         return article;
+    }
+
+    @Override
+    @Transactional
+    public void update(ArticleUpdateDTO articleUpdateDTO) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+
+        Article article = articleMapper.selectById(articleUpdateDTO.getId());
+        if (article == null) {
+            throw new BusinessException("文章不存在");
+        }
+        if (!article.getCreateUser().equals(userId)) {
+            throw new BusinessException("只能修改自己创建的文章");
+        }
+
+        categoryService.detail(articleUpdateDTO.getCategoryId());
+
+        Article updateArticle = new Article();
+        updateArticle.setId(articleUpdateDTO.getId());
+        updateArticle.setTitle(articleUpdateDTO.getTitle());
+        updateArticle.setContent(articleUpdateDTO.getContent());
+        updateArticle.setCoverImg(articleUpdateDTO.getCoverImg());
+        updateArticle.setState(articleUpdateDTO.getState());
+        updateArticle.setCategoryId(articleUpdateDTO.getCategoryId());
+        updateArticle.setVersion(article.getVersion());
+
+        int rows = articleMapper.updateById(updateArticle);
+        if (rows == 0) {
+            throw new BusinessException("文章已被他人修改，请刷新后重试");
+        }
+    }
+
+    @Override
+    public void delete(Long id) {
+        Long userId = ThreadLocalUtil.get("id", Long.class);
+
+        Article article = articleMapper.selectById(id);
+        if (article == null) {
+            throw new BusinessException("文章不存在");
+        }
+        if (!article.getCreateUser().equals(userId)) {
+            throw new BusinessException("只能删除自己创建的文章");
+        }
+
+        articleMapper.deleteById(id);
     }
 }

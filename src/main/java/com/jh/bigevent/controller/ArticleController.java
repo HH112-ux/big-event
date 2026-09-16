@@ -2,6 +2,7 @@ package com.jh.bigevent.controller;
 
 import com.jh.bigevent.dto.article.ArticleAddDTO;
 import com.jh.bigevent.dto.article.ArticleQueryDTO;
+import com.jh.bigevent.dto.article.ArticleUpdateDTO;
 import com.jh.bigevent.entity.Article;
 import com.jh.bigevent.service.ArticleService;
 import com.jh.bigevent.utils.PageBean;
@@ -16,8 +17,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,5 +72,36 @@ public class ArticleController {
             @RequestParam Long id) {
         Article article = articleService.detail(id);
         return Result.success(article);
+    }
+
+    @Operation(summary = "更新文章", description = "更新文章信息，使用乐观锁防止并发修改，分类ID必须属于当前登录用户")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "更新成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "文章不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能修改自己创建的文章", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "分类不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能查询自己创建的分类", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "文章已被他人修改，请刷新后重试", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @PutMapping
+    public Result<Void> update(@RequestBody @Valid ArticleUpdateDTO articleUpdateDTO) {
+        articleService.update(articleUpdateDTO);
+        return Result.success();
+    }
+
+    @Operation(summary = "删除文章", description = "根据ID逻辑删除文章，只能删除当前用户自己创建的文章")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "删除成功", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "文章不存在", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "200", description = "只能删除自己创建的文章", content = @Content(schema = @Schema(implementation = Result.class))),
+            @ApiResponse(responseCode = "401", description = "未授权：令牌缺失、过期或无效", content = @Content(schema = @Schema(implementation = Result.class)))
+    })
+    @DeleteMapping
+    public Result<Void> delete(
+            @Parameter(description = "文章主键ID", required = true, example = "1")
+            @RequestParam Long id) {
+        articleService.delete(id);
+        return Result.success();
     }
 }
